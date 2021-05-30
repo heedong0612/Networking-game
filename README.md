@@ -1,1 +1,1 @@
-# Networking-game
+# Online game: Connect 4
