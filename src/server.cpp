@@ -110,10 +110,10 @@ void Server::acceptMove() {
 
 		// only accept a "move" message from the player with the current turn
 		if (message.length() == 11 && message.substr(0,4) == "move" && message.substr(5,2) == turn_str) {
-			int x = (int)message[8] - 48;
-			int y = (int)message[10] - 48;
+			int r = (int)message[8] - 48;
+			int c = (int)message[10] - 48;
 
-			updateBoard(turn, x, y);
+			updateBoard(turn, r, c);
 
 			// change player turn
 			turn = 1 - turn;
@@ -125,8 +125,8 @@ void Server::acceptMove() {
 
 // updates the current board with a new move
 // x and y are assumed to be valid (not duplicate, not out of bound)
-void Server::updateBoard(int player, int x, int y) {
-	board[x][y] = player;
+void Server::updateBoard(int player, int r, int c) {
+	board[r][c] = player;
 }
 
 // check if there are any vertical, horizontal, or diagonal line of 4 consecutive buttons
