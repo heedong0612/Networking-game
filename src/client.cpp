@@ -11,16 +11,16 @@ enum Button {b0, b1, empty};
 class Client {
 public:
 	Client();
-	void registerUser(string username);
-	bool chooseMove(int r, int c);
-	bool isGameOver();
-	bool isMyTurn();
-	bool listenForServer();		
-	void endGame();
+	void registerUser(string username);		// saves username and sends the username to the server
+	bool chooseMove(int r, int c);			// sends the moves to the server if they are valid
+	bool isGameOver();						// returns whether the game is over
+	bool isMyTurn();						// returns whether it is this player's turn
+	bool listenForServer();					// accepts messages from the server
+	void endGame();							// displays ending messages
 
 private:
 	string username;
-	string pid_str;			// player id either "p0" or "p1"
+	string pid_str;							// player id either "p0" or "p1"
 	int pid;
 	bool isGameOver;
 	bool iWon;
@@ -53,8 +53,11 @@ Client::Client() {
 	isGameOver = false;
 }
 
+// saves user name and announce it to the server
 void Client::registerUser(string username) {
 	username = username;
+	const char message[] = "user " + username;
+	nAPI.sendToServer(message, pid); 
 }
 
 // the message from server can either be "start", "gameover", or "button" message
@@ -103,17 +106,26 @@ bool Client::chooseMove(int r, int c) {
 
 	// send the moves to the server
 	const char message = "move " + pid_str + " " + r + " " + c;
-	nAPI.sendToServer(message);
+	nAPI.sendToServer(message, pid);
 	myTurn = false;
 
 }
 
+// returns whether it is the player's turn
 bool Client::isMyTurn() {
 	return myTurn;
 }
 
+// returns whether the game is over
 bool Client::isGameOver() {
 	return isGameOver;
+}
+
+// display gameover message and show the winner of the game
+void Client::endGame() {
+	string message = "GAME OVER";
+	if (iWon) message += "\n You won!\n";
+	else message += "\n You lost.\n";
 }
 
 int main(){
