@@ -2,7 +2,7 @@
 CSS432 Final Program
 This class...
 */
-using namespace std;
+// using namespace std;
 #include <iostream>
 #include <cstring>
 #include <fstream>
@@ -32,8 +32,8 @@ public:
     // void registerMove(int x, int y);    //listens to client move request then updates the board
     bool sendToServer(const char message[], int);
     bool sendToClient(const char message[], int);
-    string listenFromServer();
-    string listenFromClient();
+    std::string listenFromServer();
+    std::string listenFromClient();
 
 private:
     int port;                    // this TCP port

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <time.h>
-//#include <NetworkAPI>
+#include "NetworkAPI.h"
 
 using namespace std;
 
@@ -22,7 +22,7 @@ private:
 	string username;
 	string pid_str;							// player id either "p0" or "p1"
 	int pid;
-	bool isGameOver;
+	bool gameOver;
 	bool iWon;
 	bool myTurn;
 	
@@ -41,7 +41,7 @@ Client::Client() {
 	// initialize an empty board
 	for (int r = 0; r < row; r++) {
 		for (int c = 0; c < col; c++) {
-			board[r][c] = empty;
+			board[r][c] = Button::empty;
 		}
 	}
 
@@ -50,13 +50,13 @@ Client::Client() {
 	nAPI = NetworkAPI();
 	nAPI.setup4Client(hostname);
 
-	isGameOver = false;
+	gameOver = false;
 }
 
 // saves user name and announce it to the server
 void Client::registerUser(string username) {
 	username = username;
-	const char message[] = "user " + username;
+	const char *message = ("user " + username).c_str();
 	nAPI.sendToServer(message, pid); 
 }
 
@@ -76,7 +76,7 @@ bool Client::listenForServer() {
 
 	} else if (message.length() > 8 && message.substr(0,8) == "gameover") {
 		// check if this player won the game
-		isGameOver = true;
+		gameOver = true;
 		iWon = (message.substr(9,2) == pid_str);
 
 	} else if (message.length() > 6 && message.substr(0,6) == "button") {
@@ -95,6 +95,8 @@ bool Client::listenForServer() {
 		}
 		
 	}
+
+	return true;
 }
 
 // check and return whether r, c are valid moves -- do not update board here. update it when the server ACK's it 
@@ -102,13 +104,14 @@ bool Client::chooseMove(int r, int c) {
 	
 	// check if r, c are valid
 	if (r < 0 || r >= row || c < 0 || c >= col) return false;
-	if (board[r][c] != empty) return false;
+	if (board[r][c] != Button::empty) return false;
 
 	// send the moves to the server
-	const char message = "move " + pid_str + " " + r + " " + c;
+	const char *message = ("move " + pid_str + " " +  to_string(r) + " " +  to_string(c)).c_str();
 	nAPI.sendToServer(message, pid);
 	myTurn = false;
 
+	return true;
 }
 
 // returns whether it is the player's turn
@@ -118,7 +121,7 @@ bool Client::isMyTurn() {
 
 // returns whether the game is over
 bool Client::isGameOver() {
-	return isGameOver;
+	return gameOver;
 }
 
 // display gameover message and show the winner of the game
@@ -133,15 +136,42 @@ int main(){
 	Client client = Client();
 	
 	// FIX: accept user input for user name
-	string myName = "Donghee"; // placeholder 
+
+	string myName; // placeholder 
+	bool legalName = false;
+while ( legalName == false ) { 
+	cout << "Enter username (max 10 alphanumeric characters): ";
+	cin >> myName;
+
+	if(myName.length() > 10){
+		cerr << "Please only enter max 10 characters." << endl;
+		continue;
+	}
+	for(int i = 0 ; i  < myName.length(); i++){
+		if(std::isalnum(myName[i]) == 0){
+			cerr << "Illegal character: " << myName[i] << ". Please only enter alphanumeric characters." << endl;
+		continue;
+		}
+	}
+
+	legalName = true;
+}
+
+	
+
 	client.registerUser(myName);
 
-	whlie (!client.isGameOver()) {
+	while (!client.isGameOver()) {
 		client.listenForServer(); 
 		if (client.isMyTurn()) {
 
 			// FIX: accept user input r, c
-
+			int r,c;
+			cout << "Enter row number: ";
+			cin >> r;
+			cout << "\nEnter column number: ";
+			cin >> c;
+			cout << endl;
 			while (!client.chooseMove(r, c)) {	// keep asking for r, c if they were invalid choices
 				// prompt for user input again
 			}

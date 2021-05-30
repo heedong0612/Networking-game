@@ -38,7 +38,7 @@ bool NetworkAPI::setup4Client(char hostname[])
     struct hostent *host = gethostbyname(hostname); //testing use 127.0.0.1
     if (host == nullptr)
     {
-        cerr << "Error: Failed to get host with given server name: " << string(hostname) << endl;
+        std::cerr << "Error: Failed to get host with given server name: " << std::string(hostname) << std::endl;
         return false;
     }
 
@@ -48,14 +48,14 @@ bool NetworkAPI::setup4Client(char hostname[])
     sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)*host->h_addr_list)); // sets the address to the address we looked up
     sendSockAddr.sin_port = htons(port);                                                        // set the port to connect to
 
-    cout << "Connecting to port: " << port << endl;
+    std::cout << "Connecting to port: " << port << std::endl;
     //open & connect stream-oriented socket with internet address family
     clientsd = socket(AF_INET, SOCK_STREAM, 0);
     if (clientsd < 0)
     {
 
-        cerr << gai_strerror(clientsd) << "\n"
-             << "Error: Failed to establish socket" << endl;
+        std::cerr << gai_strerror(clientsd) << "\n"
+                  << "Error: Failed to establish socket" << std::endl;
         close(clientsd);
         return false;
     }
@@ -64,8 +64,8 @@ bool NetworkAPI::setup4Client(char hostname[])
     int connectStatus = connect(clientsd, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
     if (connectStatus < 0)
     {
-        cerr << gai_strerror(connectStatus) << "\n"
-             << "Error: Failed to connect to the server" << endl;
+        std::cerr << gai_strerror(connectStatus) << "\n"
+                  << "Error: Failed to connect to the server" << std::endl;
         close(clientsd);
         return false;
     }
@@ -113,7 +113,7 @@ bool NetworkAPI::setup4Server()
 // //listens to client move request then updates the board
 // void NetworkAPI::registerMove(int x, int y)
 // {
-//     string move = listenFromClient();
+//     std::string move = listenFromClient();
 
 //     sendToServer(move.c_str(), clientsd);
 // }
@@ -125,8 +125,8 @@ bool NetworkAPI::sendToServer(const char message[], int sd)
     // Couldn't send the request.
     if (sendResult <= 0)
     {
-        cerr << gai_strerror(sendResult) << "\n"
-             << "Client unable to send the request to server" << endl;
+        std::cerr << gai_strerror(sendResult) << "\n"
+                  << "Client unable to send the request to server" << std::endl;
         return false;
     }
 
@@ -141,22 +141,22 @@ bool NetworkAPI::sendToClient(const char message[], int sd)
     // Couldn't send the request.
     if (sendResult <= 0)
     {
-        cerr << gai_strerror(sendResult) << "\n"
-             << "Server unable to send the request to client" << endl;
+        std::cerr << gai_strerror(sendResult) << "\n"
+                  << "Server unable to send the request to client" << std::endl;
         return false;
     }
 
     return true;
 }
 
-string NetworkAPI::listenFromServer()
+std::string NetworkAPI::listenFromServer()
 {
-    string response = "";
+    std::string response = "";
     recv(clientsd, &response, 1, 0);
     return response;
 }
 
-string NetworkAPI::listenFromClient()
+std::string NetworkAPI::listenFromClient()
 {
     // Listen on the socket
     int n = 5;                              //connection request size
@@ -187,7 +187,7 @@ string NetworkAPI::listenFromClient()
         }
 
         //read from client
-        string response = "";
+        std::string response = "";
         recv(newSd, &response, 1, 0);
         return response;
     }

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <time.h>
-//#include <NetworkAPI>
+#include "NetworkAPI.h"
 
 using namespace std;
 
@@ -41,7 +41,7 @@ Server::Server() {
 	// initialize an empty board
 	for (int r = 0; r < row; r++) {
 		for (int c = 0; c < col; c++) {
-			board[r][c] = empty;
+			board[r][c] = Button::empty;
 		}
 	}
 
@@ -61,7 +61,7 @@ void Server::acceptUser() {
 			message = nAPI.listenFromClient();
 
 			if (message.length() >= 4 && message.substr(0,4) == "user") {
-				names[i] = message.substr(5);
+				player_names[i] = message.substr(5);
 				break;
 			}
 		}
@@ -88,8 +88,8 @@ void Server::startGame() {
 		message_no += " p0";
 	}
 
-	const char buffer_yes[] = message_yes;
-	const char buffer_no[] = message_no;
+	const char *buffer_yes = (message_yes).c_str();
+	const char *buffer_no = (message_no).c_str();
 
 	// CHECK: should I wrap these in while loops to guarantee a send?
 	nAPI.sendToClient(buffer_yes, turn); 
@@ -100,7 +100,7 @@ void Server::startGame() {
 // accepts a move from the player and send the updated information to both players
 void Server::acceptMove() {
 	
-	string message = listenFromClient();
+	string message = nAPI.listenFromClient();
 
 	string turn_str = "p0";
 	if (turn == p1) turn_str = "p1";
@@ -142,7 +142,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int r = 1; r < row; r++) {
-			if (board[r][c] == empty) count = 0;
+			if (board[r][c] == Button::empty) count = 0;
 			else if (board[r][c] == prev) count += 1;
 			else  count = 1;
 
@@ -162,7 +162,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int c = 1; c < col; c++) {
-			if (board[r][c] == empty) count = 0;
+			if (board[r][c] == Button::empty) count = 0;
 			else if (board[r][c] == prev) count += 1;
 			else  count = 1;	
 
@@ -182,7 +182,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int c = 1; c <= r; c++) {
-			if (board[r-c][c] == empty) count = 0;
+			if (board[r-c][c] == Button::empty) count = 0;
 			else if (board[r-c][c] == prev) count += 1;
 			else  count = 1;	
 		
@@ -200,7 +200,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int r = 4; r >= (c-1); r--) {
-			if (board[r][row-r+c-1] == empty) count = 0;
+			if (board[r][row-r+c-1] == Button::empty) count = 0;
 			else if (board[r][row-r+c-1] == prev) count += 1;
 			else  count = 1;	
 		
@@ -219,7 +219,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int c = 1; c < col-r-1; c++) {
-			if (board[r+c][c] == empty) count = 0;
+			if (board[r+c][c] == Button::empty) count = 0;
 			else if (board[r+c][c] == prev) count += 1;
 			else  count = 1;	
 		
@@ -238,7 +238,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int c = r+1; c < col; c++) {
-			if (board[c-r][c] == empty) count = 0;
+			if (board[c-r][c] == Button::empty) count = 0;
 			else if (board[c-r][c] == prev) count += 1;
 			else  count = 1;	
 		
@@ -264,8 +264,8 @@ void Server::endGame() {
 		message += " p1";
 	}
 
-	nAPI.sendToClient(message, p0); 
-	nAPI.sendToClient(message, p1); 
+	nAPI.sendToClient(message.c_str(), p0); 
+	nAPI.sendToClient(message.c_str(), p1); 
 }
 
 // Game flow
