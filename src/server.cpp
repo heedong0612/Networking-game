@@ -1,3 +1,11 @@
+/*Jessica Nguyen + Donghee Lee
+CSS432 Final Program
+server.cpp
+This programs acts as a game server to host the 4 in a row game. The server 
+will be able to: accept new players, start the game, accept player input, update
+the game board, and end the game if there is a winner.
+*/
+
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -35,6 +43,7 @@ private:
 
 // initilizes the Server
 Server::Server() {
+	signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
 	row = 6;
 	col = 7;
 
@@ -49,7 +58,7 @@ Server::Server() {
 	nAPI.setup4Server();
 
 }
-
+void signal_callback_handler(int signum);
 // waits for and accept 2 players for the game
 void Server::acceptUser() {
 	
@@ -284,4 +293,11 @@ int main(){
 	// Game over. announce the winner and the end of the Game
 	server.endGame();
 
+}
+
+void signal_callback_handler(int signum)
+{
+    std::cout << "Caught signal " << signum << std::endl;
+    // Terminate program
+    exit(signum);
 }

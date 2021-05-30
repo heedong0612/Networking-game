@@ -1,3 +1,11 @@
+/*Jessica Nguyen + Donghee Lee
+CSS432 Final Program
+client.cpp
+This program acts as clients connecting to a game server to play 4 in a row.
+The client will be able to register their username, choose their move, take turns
+playing, and disconnect from the game.
+*/
+
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -5,48 +13,61 @@
 
 using namespace std;
 
-enum Player {p0, p1};
-enum Button {b0, b1, empty};
+enum Player
+{
+	p0,
+	p1
+};
+enum Button
+{
+	b0,
+	b1,
+	empty
+};
 
-class Client {
+class Client
+{
 public:
 	Client();
-	void registerUser(string username);		// saves username and sends the username to the server
-	bool chooseMove(int r, int c);			// sends the moves to the server if they are valid
-	bool isGameOver();						// returns whether the game is over
-	bool isMyTurn();						// returns whether it is this player's turn
-	bool listenForServer();					// accepts messages from the server
-	void endGame();							// displays ending messages
+	void registerUser(string username); // saves username and sends the username to the server
+	bool chooseMove(int r, int c);		// sends the moves to the server if they are valid
+	bool isGameOver();					// returns whether the game is over
+	bool isMyTurn();					// returns whether it is this player's turn
+	bool listenForServer();				// accepts messages from the server
+	void endGame();						// displays ending messages
 
 private:
 	string username;
-	string pid_str;							// player id either "p0" or "p1"
+	string pid_str; // player id either "p0" or "p1"
 	int pid;
 	bool gameOver;
 	bool iWon;
 	bool myTurn;
-	
+
 	int row;
 	int col;
-	int board[6][7];		
+	int board[6][7];
 
 	NetworkAPI nAPI;
 };
-
-Client::Client() {
-
+void signal_callback_handler(int signum);
+Client::Client()
+{
+	signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
 	row = 6;
 	col = 7;
 
 	// initialize an empty board
-	for (int r = 0; r < row; r++) {
-		for (int c = 0; c < col; c++) {
+	for (int r = 0; r < row; r++)
+	{
+		for (int c = 0; c < col; c++)
+		{
 			board[r][c] = Button::empty;
 		}
 	}
 
-	char hostname [] = "placeholder";
-	
+	char hostname[] = "placeholder"; //testing use 127.0.0.1 or CSSlabs
+
 	nAPI = NetworkAPI();
 	nAPI.setup4Client(hostname);
 
@@ -54,60 +75,71 @@ Client::Client() {
 }
 
 // saves user name and announce it to the server
-void Client::registerUser(string username) {
+void Client::registerUser(string username)
+{
 	username = username;
 	const char *message = ("user " + username).c_str();
-	nAPI.sendToServer(message, pid); 
+	nAPI.sendToServer(message, pid);
 }
 
 // the message from server can either be "start", "gameover", or "button" message
-bool Client::listenForServer() {
+bool Client::listenForServer()
+{
 	string message = nAPI.listenFromServer();
 
-	if (message.length() > 5 && message.substr(0,5) == "start") {		
-		
+	if (message.length() > 5 && message.substr(0, 5) == "start")
+	{
+
 		// check if this player is starting first
-		myTurn = message.substr(6,3) == "yes";
+		myTurn = message.substr(6, 3) == "yes";
 
 		// register player id
 		pid_str = message.substr(message.length() - 2);
-		if (pid_str == "p0") pid = p0;
-		else pid = p1;
-
-	} else if (message.length() > 8 && message.substr(0,8) == "gameover") {
+		if (pid_str == "p0")
+			pid = p0;
+		else
+			pid = p1;
+	}
+	else if (message.length() > 8 && message.substr(0, 8) == "gameover")
+	{
 		// check if this player won the game
 		gameOver = true;
-		iWon = (message.substr(9,2) == pid_str);
-
-	} else if (message.length() > 6 && message.substr(0,6) == "button") {
+		iWon = (message.substr(9, 2) == pid_str);
+	}
+	else if (message.length() > 6 && message.substr(0, 6) == "button")
+	{
 		// update my board with the new move ack'ed by the server
-		string player = message.substr(7,2);
+		string player = message.substr(7, 2);
 		int r = (int)message[10] - 48;
 		int c = (int)message[12] - 48;
 
-		if (player == pid_str) {	// this player's recent move got ACK'd
+		if (player == pid_str)
+		{ // this player's recent move got ACK'd
 			// update my board
 			board[r][c] = pid;
-
-		} else {					// other player has made a move
+		}
+		else
+		{ // other player has made a move
 			board[r][c] = (1 - pid);
 			myTurn = true;
 		}
-		
 	}
 
 	return true;
 }
 
-// check and return whether r, c are valid moves -- do not update board here. update it when the server ACK's it 
-bool Client::chooseMove(int r, int c) {
-	
+// check and return whether r, c are valid moves -- do not update board here. update it when the server ACK's it
+bool Client::chooseMove(int r, int c)
+{
+
 	// check if r, c are valid
-	if (r < 0 || r >= row || c < 0 || c >= col) return false;
-	if (board[r][c] != Button::empty) return false;
+	if (r < 0 || r >= row || c < 0 || c >= col)
+		return false;
+	if (board[r][c] != Button::empty)
+		return false;
 
 	// send the moves to the server
-	const char *message = ("move " + pid_str + " " +  to_string(r) + " " +  to_string(c)).c_str();
+	const char *message = ("move " + pid_str + " " + to_string(r) + " " + to_string(c)).c_str();
 	nAPI.sendToServer(message, pid);
 	myTurn = false;
 
@@ -115,69 +147,86 @@ bool Client::chooseMove(int r, int c) {
 }
 
 // returns whether it is the player's turn
-bool Client::isMyTurn() {
+bool Client::isMyTurn()
+{
 	return myTurn;
 }
 
 // returns whether the game is over
-bool Client::isGameOver() {
+bool Client::isGameOver()
+{
 	return gameOver;
 }
 
 // display gameover message and show the winner of the game
-void Client::endGame() {
+void Client::endGame()
+{
 	string message = "GAME OVER";
-	if (iWon) message += "\n You won!\n";
-	else message += "\n You lost.\n";
+	if (iWon)
+		message += "\n You won!\n";
+	else
+		message += "\n You lost.\n";
 }
 
-int main(){
-	
+int main()
+{
+
 	Client client = Client();
-	
+
 	// FIX: accept user input for user name
 
-	string myName; // placeholder 
+	string myName; // placeholder
 	bool legalName = false;
-while ( legalName == false ) { 
-	cout << "Enter username (max 10 alphanumeric characters): ";
-	cin >> myName;
+	while (legalName == false)
+	{
+		cout << "Enter username (max 10 alphanumeric characters): ";
+		cin >> myName;
 
-	if(myName.length() > 10){
-		cerr << "Please only enter max 10 characters." << endl;
-		continue;
-	}
-	for(int i = 0 ; i  < myName.length(); i++){
-		if(std::isalnum(myName[i]) == 0){
-			cerr << "Illegal character: " << myName[i] << ". Please only enter alphanumeric characters." << endl;
-		continue;
+		if (myName.length() > 10)
+		{
+			cerr << "Please only enter max 10 characters." << endl;
+			continue;
 		}
+		for (int i = 0; i < myName.length(); i++)
+		{
+			if (std::isalnum(myName[i]) == 0)
+			{
+				cerr << "Illegal character: " << myName[i] << ". Please only enter alphanumeric characters." << endl;
+				continue;
+			}
+		}
+
+		legalName = true;
 	}
-
-	legalName = true;
-}
-
-	
 
 	client.registerUser(myName);
 
-	while (!client.isGameOver()) {
-		client.listenForServer(); 
-		if (client.isMyTurn()) {
+	while (!client.isGameOver())
+	{
+		client.listenForServer();
+		if (client.isMyTurn())
+		{
 
 			// FIX: accept user input r, c
-			int r,c;
+			int r, c;
 			cout << "Enter row number: ";
 			cin >> r;
 			cout << "\nEnter column number: ";
 			cin >> c;
 			cout << endl;
-			while (!client.chooseMove(r, c)) {	// keep asking for r, c if they were invalid choices
+			while (!client.chooseMove(r, c))
+			{	// keep asking for r, c if they were invalid choices
 				// prompt for user input again
 			}
 		}
 	}
 
 	client.endGame();
-	
+}
+
+void signal_callback_handler(int signum)
+{
+	std::cout << "Caught signal " << signum << std::endl;
+	// Terminate program
+	exit(signum);
 }

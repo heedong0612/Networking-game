@@ -1,7 +1,13 @@
 /*Jessica Nguyen + Donghee Lee
 CSS432 Final Program
-This class...
+NetworkAPI.cpp
+This program acts as the networking protocol interface for the TCP 
+communication between 2 clients and server hosting the 4 in a row game.
+The interface has the following functions: create TCP sockets between client/server;
+send messages to client -> server (vice versa); listen to incoming messages
+from client -> server (vice versa); and closing the TCP socket once done.
 */
+
 #define PortNum 12345
 #define NULL_SD -1 // means no socket descriptor
 
