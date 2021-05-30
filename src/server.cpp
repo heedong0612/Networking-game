@@ -120,14 +120,57 @@ void Server::updateBoard(int player, int x, int y) {
 
 // check if there are any vertical, horizontal, or diagonal line of 4 consecutive buttons
 bool Server::isGameOver() {
+
+	int prev;
+	int count;
+	int winner;
+
 	// vertical 
+	for (int c = 0; c < col; c++) {
+		prev = board[0][c];
+		count = 1;
+
+		for (int r = 1; r < row; r++) {
+			if (board[r][c] == 2) count = 0;
+			else if (board[r][c] == prev) count += 1;
+			else  count = 1;
+
+			prev = board[r][c];
+
+			// found a winner
+			if (count == 4) {
+				winner = board[r][c];
+				return true;
+			}
+		}
+	}
 
 	// horizontal 
+	for (int r = 0; r < row; r++) {
+		prev = board[r][0];
+		count = 1;
 
-	// diagonal
+		for (int c = 1; c < col; c++) {
+			if (board[r][c] == 2) count = 0;
+			else if (board[r][c] == prev) count += 1;
+			else  count = 1;	
 
-	// winner = p0;
+			prev = board[r][c];
 
+			// found a winner
+			if (count == 4) {
+				winner = board[r][c];
+				return true;
+			}
+		}
+	}
+
+	// diagonal up-right
+
+	// diganoal down-left
+
+
+	return false;
 }
 
 // announces the end of the game and the winner of the game
