@@ -10,19 +10,19 @@ enum Button {b0, b1, empty};
 
 class Server {
 public:
-	Server();
-	void acceptUser();
-	void startGame();
-	void acceptMove();
-	bool isGameOver();
-	void endGame(); 
+	Server();				// initiate connections with Network API
+	void acceptUser();		// waits for and accepts 2 players
+	void startGame();		// starts the game with one random player as the starter
+	void acceptMove();		// accept a move from a player and updates and broadcast the board
+	bool isGameOver();		// returns whether the game is over 
+	void endGame();			// broadcasts the end of the game and the winner
 
 private:
 	void updateBoard(int turn, int x, int y);
 
 	int row;
 	int col;
-	int board[6][7]; 
+	int board[6][7];		
 	int turn; // indicates who's turn it is
 	int winner;
 
@@ -33,15 +33,24 @@ private:
 
 };
 
+// initilizes the Server
 Server::Server() {
 	row = 6;
 	col = 7;
+
+	// initialize an empty board
+	for (int r = 0; r < row; r++) {
+		for (int c = 0; c < col; c++) {
+			board[r][c] = empty;
+		}
+	}
 
 	nAPI = NetworkAPI();
 	nAPI.setup4Server();
 
 }
 
+// waits for and accept 2 players for the game
 void Server::acceptUser() {
 	
 	string message;
@@ -60,6 +69,7 @@ void Server::acceptUser() {
 	
 }
 
+// announces the start of the game and the player who starts first
 void Server::startGame() {
 
 	// a random int between 0 and 1
@@ -113,6 +123,7 @@ void Server::acceptMove() {
 
 }
 
+// updates the current board with a new move
 // x and y are assumed to be valid (not duplicate, not out of bound)
 void Server::updateBoard(int player, int x, int y) {
 	board[x][y] = player;
@@ -131,7 +142,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int r = 1; r < row; r++) {
-			if (board[r][c] == 2) count = 0;
+			if (board[r][c] == empty) count = 0;
 			else if (board[r][c] == prev) count += 1;
 			else  count = 1;
 
@@ -151,7 +162,7 @@ bool Server::isGameOver() {
 		count = 1;
 
 		for (int c = 1; c < col; c++) {
-			if (board[r][c] == 2) count = 0;
+			if (board[r][c] == empty) count = 0;
 			else if (board[r][c] == prev) count += 1;
 			else  count = 1;	
 
@@ -166,9 +177,79 @@ bool Server::isGameOver() {
 	}
 
 	// diagonal up-right
+	for (int r = 3; r < row; r++) {
+		prev = board[r][0];
+		count = 1;
+
+		for (int c = 1; c <= r; c++) {
+			if (board[r-c][c] == empty) count = 0;
+			else if (board[r-c][c] == prev) count += 1;
+			else  count = 1;	
+		
+			prev = board[r-c][c];
+			// found a winner
+			if (count == 4) {
+				winner = board[r-c][c];
+				return true;
+			}
+		}
+	}
+
+	for (int c = 1; c <= 3; c++) {
+		prev = board[5][c];
+		count = 1;
+
+		for (int r = 4; r >= (c-1); r--) {
+			if (board[r][row-r+c-1] == empty) count = 0;
+			else if (board[r][row-r+c-1] == prev) count += 1;
+			else  count = 1;	
+		
+			prev = board[r][row-r+c-1];
+			// found a winner
+			if (count == 4) {
+				winner = board[r][row-r+c-1];
+				return true;
+			}
+		}
+	}
 
 	// diganoal down-left
+	for (int r = 0; r < 3; r++) {
+		prev = board[r][0];
+		count = 1;
 
+		for (int c = 1; c < col-r-1; c++) {
+			if (board[r+c][c] == empty) count = 0;
+			else if (board[r+c][c] == prev) count += 1;
+			else  count = 1;	
+		
+			prev = board[r+c][c];
+			// found a winner
+			if (count == 4) {
+				winner = board[r+c][c];
+				return true;
+			}
+		}
+	}
+
+
+	for (int r = 1; r <= 3; r++) {
+		prev = board[0][r];
+		count = 1;
+
+		for (int c = r+1; c < col; c++) {
+			if (board[c-r][c] == empty) count = 0;
+			else if (board[c-r][c] == prev) count += 1;
+			else  count = 1;	
+		
+			prev = board[c-r][c];
+			// found a winner
+			if (count == 4) {
+				winner = board[c-r][c];
+				return true;
+			}
+		}
+	}
 
 	return false;
 }
@@ -187,6 +268,7 @@ void Server::endGame() {
 	nAPI.sendToClient(message, p1); 
 }
 
+// Game flow
 int main(){
 	Server server = Server();
 
