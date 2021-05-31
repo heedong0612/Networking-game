@@ -124,6 +124,11 @@ void Server::acceptMove() {
 
 			updateBoard(turn, r, c);
 
+			// send the recent valid move  to both players
+			const char *recent_move_message = ("button " + turn_str + " " + message[8] + " "  + message[10]).c_str();
+			nAPI.sendToClient(recent_move_message, p0);
+			nAPI.sendToClient(recent_move_message, p1);
+
 			// change player turn
 			turn = 1 - turn;
 			break;
