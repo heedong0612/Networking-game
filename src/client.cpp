@@ -30,7 +30,7 @@ class Client
 public:
 	Client();
 	void registerUser(string username); // saves username and sends the username to the server
-	bool chooseMove(int r, int c);		// sends the moves to the server if they are valid
+	bool chooseMove(int c);				// sends the moves to the server if they are valid
 	bool isGameOver();					// returns whether the game is over
 	bool isMyTurn();					// returns whether it is this player's turn
 	bool listenForServer();				// accepts messages from the server
@@ -129,17 +129,28 @@ bool Client::listenForServer()
 }
 
 // check and return whether r, c are valid moves -- do not update board here. update it when the server ACK's it
-bool Client::chooseMove(int r, int c)
+bool Client::chooseMove(int c)
 {
 
 	// check if r, c are valid
-	if (r < 0 || r >= row || c < 0 || c >= col)
-		return false;
-	if (board[r][c] != Button::empty)
+	if (c < 0 || c >= col)
 		return false;
 
-	// send the moves to the server
-	const char *message = ("move " + pid_str + " " + to_string(r) + " " + to_string(c)).c_str();
+	// the column is already full
+	if (board[0][c] != Button::empty)
+		return false;
+
+	// find the right place for the button
+	const char *message;
+
+	for (int r = row-1; r >= 0; r--) {
+		if (board[r][c] == Button::empty) {
+			message = ("move " + pid_str + " " + to_string(r) + " " + to_string(c)).c_str();
+			break;
+		}
+	}
+
+	
 	nAPI.sendToServer(message, pid);
 	myTurn = false;
 
@@ -207,16 +218,17 @@ int main()
 		if (client.isMyTurn())
 		{
 
-			// FIX: accept user input r, c
-			int r, c;
-			cout << "Enter row number: ";
-			cin >> r;
+			// accept column number to drop the tile to
+			int c;
 			cout << "\nEnter column number: ";
 			cin >> c;
 			cout << endl;
-			while (!client.chooseMove(r, c))
+			while (!client.chooseMove(c))
 			{	// keep asking for r, c if they were invalid choices
 				// prompt for user input again
+				cout << "\nEnter column number: ";
+				cin >> c;
+				cout << endl;
 			}
 		}
 	}
