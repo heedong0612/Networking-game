@@ -36,10 +36,10 @@ private:
 
 // initilizes the Server
 Server::Server() {
-	cout <<" 34566";
+	cout <<" in server constructor" << endl;
 
 	signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
-	cout <<" 456789";
+	
 	nAPI = NetworkAPI();
 	nAPI.setup4Server();
 
@@ -47,14 +47,7 @@ Server::Server() {
 
 // Game flow
 int main(){
-	cout << "HELLO";
+	cout <<" in server main" << endl;
 	Server server = Server();
-	const char * msg = ("helllo client!");
-	server.nAPI.sendToClient(msg,0);
-
-	//while(1) {
-	//	cout << "1";
-	//}
-	
 }
 

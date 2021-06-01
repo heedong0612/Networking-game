@@ -48,7 +48,7 @@ Client::Client()
 	signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
 
 	nAPI = NetworkAPI();
-	char * hostname = ("csslab1.uwb.edu");
+	char hostname []= ("127.0.0.1");
 	nAPI.setup4Client(hostname);
 
 }
@@ -57,6 +57,8 @@ int main()
 {
 	cout << "HEL:O";
 	Client client = Client();
+	const char *intro = "connect";
+	client.nAPI.sendToServer(intro, 0);
 	string msg = client.nAPI.listenFromServer();
 	cout << "Received: " << msg << endl;
 }

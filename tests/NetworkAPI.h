@@ -46,6 +46,8 @@ private:
     int serversd;    
     struct sockaddr_in acceptSockAddr;   // my socket address for internet
     struct sockaddr_in sendSockAddr; // a destination socket address for internet
+    int player1sock;
+    int player2sock;
     // bool turn; //true if player 1, false if player 2;
     // string players[]; //2 slots for usernames
     // char matrix[]; //2D game board

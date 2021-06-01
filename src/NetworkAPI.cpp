@@ -127,7 +127,7 @@ bool NetworkAPI::setup4Server()
 //client -> server
 bool NetworkAPI::sendToServer(const char message[], int sd)
 {
-    int sendResult = send(sd, message, strlen(message), 0);
+    int sendResult = sendto(clientsd, message, strlen(message), 0, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
     // Couldn't send the request.
     if (sendResult <= 0)
     {
@@ -143,7 +143,7 @@ bool NetworkAPI::sendToServer(const char message[], int sd)
 bool NetworkAPI::sendToClient(const char message[], int sd)
 {
     //makes sure listens first for client
-    int sendResult = send(sd, message, strlen(message), 0);
+    int sendResult = sendto(serversd, message, strlen(message), 0, (sockaddr *)&acceptSockAddr, sizeof(acceptSockAddr));
     // Couldn't send the request.
     if (sendResult <= 0)
     {
