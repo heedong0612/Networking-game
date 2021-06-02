@@ -97,7 +97,7 @@ bool Client::listenForServer()
 
 	if (message.length() > 5 && message.substr(0, 5) == "start")
 	{
-
+		cout << "MESSAGE FROM SERVER: " << message << endl;
 		// check if this player is starting first
 		myTurn = message.substr(6, 3) == "yes";
 
@@ -238,30 +238,34 @@ int main()
 	}
 
 	client.registerUser(myName);
-	cout << "GAME START" << endl;
+	cout << "\n         GAME START" << endl;
 
 	client.drawBoard();
-	// while (!client.isGameOver())
-	// {
-	// 	cout << "IN GAME " << endl;
-	// 	client.listenForServer();
-	// 	if (client.isMyTurn())
-	// 	{
 
-	// 		// accept column number to drop the tile to
-	// 		int c;
-	// 		cout << "\nEnter column number: ";
-	// 		cin >> c;
-	// 		cout << endl;
-	// 		while (!client.chooseMove(c))
-	// 		{	// keep asking for r, c if they were invalid choices
-	// 			// prompt for user input again
-	// 			cout << "\nEnter column number: ";
-	// 			cin >> c;
-	// 			cout << endl;
-	// 		}
-	// 	}
-	// }
+	while (!client.isGameOver())
+	{
+		// cout << "IN GAME " << endl;
+		client.listenForServer();
+
+		if (client.isMyTurn())
+		{
+
+			// accept column number to drop the tile to
+			int c;
+			cout << "\nEnter column number: ";
+			cin >> c;
+			cout << endl;
+			while (!client.chooseMove(c))
+			{	// keep asking for r, c if they were invalid choices
+				// prompt for user input again
+				cout << "\nEnter column number: ";
+				cin >> c;
+				cout << endl;
+			}
+		} else {
+
+		}
+	}
 
 	// client.endGame();
 }

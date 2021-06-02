@@ -74,12 +74,9 @@ void Server::acceptUser() {
 
 	// accept 2 players
 	for (int i = 0; i < 2; i++) {
-
 		while (true) { // while loop for grabbing only "user ..." message
-			message = nAPI.listenFromClient();
-
+			message = nAPI.listenFromClient(i);
 			if (message.length() >= 4 && message.substr(0,4) == "user") {
-			//	cout << "PLAYER: " << message.substr(5) << endl;
 				player_names[i] = message.substr(5);
 				break;
 			}
@@ -119,13 +116,13 @@ void Server::startGame() {
 // accepts a move from the player and send the updated information to both players
 void Server::acceptMove() {
 	
-	string message = nAPI.listenFromClient();
+	string message = nAPI.listenFromClient(-1);
 
 	string turn_str = "p0";
 	if (turn == p1) turn_str = "p1";
 
 	while (true) {
-		message = nAPI.listenFromClient();
+		message = nAPI.listenFromClient(-1);
 
 		// only accept a "move" message from the player with the current turn
 		if (message.length() == 11 && message.substr(0,4) == "move" && message.substr(5,2) == turn_str) {
@@ -300,7 +297,7 @@ int main(){
 	server.acceptUser();
 	cout <<"[All players reigstered]" << endl;
 	cout <<"Players: " << server.player_names[0] << ", " << server.player_names[1] << endl;
-	// server.startGame();
+//	server.startGame(); // 1 send to each client (about turns)
 
 	// // continue the game until there is a winner
 	// while (!server.isGameOver()) {

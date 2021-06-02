@@ -38,7 +38,7 @@ public:
     bool sendToServer(const char message[]);
     bool sendToClient(const char message[], int playerID);
     std::string listenFromServer();
-    std::string listenFromClient();
+    std::string listenFromClient(int playerID);
 
 private:
     int port;                    // this TCP port

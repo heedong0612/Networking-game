@@ -115,7 +115,7 @@ bool NetworkAPI::setup4Server()
         return false;
     }
 
-    listenFromClient();
+    listenFromClient(-1);
     return true;
 }
 
@@ -180,7 +180,7 @@ std::string NetworkAPI::listenFromServer()
 }
 
 //return whatever client passed in, set up socketplayer1 & 2
-std::string NetworkAPI::listenFromClient()
+std::string NetworkAPI::listenFromClient(int playerID)
 {
     // Listen on the socket
     int n = 5;                              //connection request size
@@ -219,16 +219,14 @@ std::string NetworkAPI::listenFromClient()
             char buffer[MAX_BUF];
             memset(buffer, 0, MAX_BUF);
 
+            int sock = player1sock;
+            if (playerID == 1) {
+                sock = player2sock;
+            } 
             while (1)
             {
-                int read = recv(player1sock, buffer, MAX_BUF, 0); //READ from client
-                if (read > 0)
-                {
-                    return buffer;
-                }
-                read = recv(player2sock, buffer, MAX_BUF, 0); //READ from client
-                if (read > 0)
-                {
+                int read1 = recv(sock, buffer, MAX_BUF, 0); //READ from client
+                if  (read > 0) {
                     return buffer;
                 }
             }
@@ -247,18 +245,25 @@ std::string NetworkAPI::listenFromClient()
         {
             std::cout << "[Player 0 connected]" << std::endl;
             player1sock = newSd;
+           // close(newSd);
+            return "";
         }
         else if (response.substr(0, 7) == "connect" && player2sock == NULL_SD)
         {
             std::cout << "[Player 1 connected]" << std::endl;
             player2sock = newSd;
+           // close(newSd);
+            return "";
         }
+        std::cout << "HEREERERRE0" << std::endl;
         if (player1sock != NULL_SD && player2sock != NULL_SD)
         {
+            std::cout << "HEREERERRE" << std::endl;
             //  const char *msg = "you are p0" ;
             // sendToClient(msg, player1sock);
             // msg = "you are p1" ;
             // sendToClient(msg, player2sock);
+            //close(newSd);
             return buffer;
         }
 
@@ -266,6 +271,6 @@ std::string NetworkAPI::listenFromClient()
 
         //sendToClient(buffer, newSd);
     }
-    close(newSd);
+    //close(newSd);
     return "";
 }
