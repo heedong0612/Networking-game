@@ -49,5 +49,12 @@ Server::Server() {
 int main(){
 	cout <<" in server main" << endl;
 	Server server = Server();
+	server.nAPI.sendToClient("hello from server to 0", 0);
+	server.nAPI.sendToClient("hello from server to 1", 1);
+
+	string reply = server.nAPI.listenFromClient();
+	cout << "reply 1 " << reply << endl;	
+	reply = server.nAPI.listenFromClient();
+	cout << "reply 2 " <<reply << endl;	
 }
 

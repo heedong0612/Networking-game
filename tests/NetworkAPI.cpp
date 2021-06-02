@@ -136,7 +136,7 @@ bool NetworkAPI::setup4Server()
 // }
 
 //client -> server
-bool NetworkAPI::sendToServer(const char message[], int sd)
+bool NetworkAPI::sendToServer(const char message[])
 {
     std::cout << " in sendToServer" << std::endl;
     std::cout << " message is " << message << std::endl;
@@ -154,10 +154,19 @@ bool NetworkAPI::sendToServer(const char message[], int sd)
 }
 
 //server -> client
-bool NetworkAPI::sendToClient(const char message[], int sd)
+bool NetworkAPI::sendToClient(const char message[], int playerID)
 {
     std::cout << " in sendToClient" << std::endl;
     //makes sure listens first for client
+    int sd;
+    if (playerID == 0)
+    {
+        sd = player1sock;
+    }
+    else
+    {
+        sd = player2sock;
+    }
     int sendResult = send(sd, message, strlen(message), 0);
     // std::cout << "sendResult: " << sendResult << std::endl;
     // Couldn't send the request.
@@ -204,23 +213,50 @@ std::string NetworkAPI::listenFromClient()
     int newSd;
     while (1)
     {
-        // Accept the connection as a new socket
-        newSd = accept(serversd, (sockaddr *)&newsockAddr, &newsockSize); // grabs the new connection and assigns it a temporary socket
-        // std::cout << " after accept(serversd)" << std::endl;
-        if (newSd == -1)
+        if (player1sock == NULL_SD || player2sock == NULL_SD)
         {
-            std::cerr << gai_strerror(newSd) << "\n"
-                      << "Error: Unable to connect to client." << std::endl;
-            close(newSd);
+            // Accept the connection as a new socket
+            std::cout << " before accept" << std::endl;
+
+            newSd = accept(serversd, (sockaddr *)&newsockAddr, &newsockSize); // grabs the new connection and assigns it a temporary socket
+            // std::cout << " after accept(serversd)" << std::endl;
+            std::cout << " after accept" << std::endl;
+            if (newSd == -1)
+            {
+                std::cerr << gai_strerror(newSd) << "\n"
+                          << "Error: Unable to connect to client." << std::endl;
+                close(newSd);
+                return "";
+            }
+        }
+        else
+        {
+            char buffer[MAX_BUF];
+            memset(buffer, 0, MAX_BUF);
+
+            while (1)
+            {
+                int read = recv(player1sock, buffer, MAX_BUF, 0); //READ from client
+                if (read > 0)
+                {
+                    return buffer;
+                }
+                read = recv(player2sock, buffer, MAX_BUF, 0); //READ from client
+                if (read > 0)
+                {
+                    return buffer;
+                }
+            }
+
             return "";
         }
 
-        //read from client
+        //read from client for all other casess
 
         char buffer[MAX_BUF];
         memset(buffer, 0, MAX_BUF);
         int read = recv(newSd, buffer, MAX_BUF, 0); //READ from client
-        
+
         std::cout << " response is " << buffer << std::endl;
         std::string response(buffer);
         if (response.substr(0, 7) == "connect" && player1sock == NULL_SD)
@@ -232,16 +268,18 @@ std::string NetworkAPI::listenFromClient()
         {
             std::cout << " setting player2sock" << std::endl;
             player2sock = newSd;
-        } 
-         if (player1sock != NULL_SD && player2sock != NULL_SD){
-             const char *msg = "you are p0" ;
-            sendToClient(msg, player1sock);
-            msg = "you are p1" ;
-            sendToClient(msg, player2sock);
-            break;
         }
-        //if both ready, send to server(okayer1sock, "you are p0"); send to server(player2sock, "you are p1"); 
+        if (player1sock != NULL_SD && player2sock != NULL_SD)
+        {
+            //  const char *msg = "you are p0" ;
+            // sendToClient(msg, player1sock);
+            // msg = "you are p1" ;
+            // sendToClient(msg, player2sock);
+            std::cout << " before exiting" << std::endl;
+            return buffer;
+        }
 
+        //if both ready, send to server(okayer1sock, "you are p0"); send to server(player2sock, "you are p1");
 
         //sendToClient(buffer, newSd);
     }

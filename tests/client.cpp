@@ -58,8 +58,11 @@ int main()
 	cout << "HEL:O";
 	Client client = Client();
 	const char *intro = "connect";
-	client.nAPI.sendToServer(intro, 0);
+	client.nAPI.sendToServer(intro);
 	string msg = client.nAPI.listenFromServer();
 	cout << "Received: " << msg << endl;
+
+	intro = "hello from client to server";
+	client.nAPI.sendToServer(intro);
 }
 
