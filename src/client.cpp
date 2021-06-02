@@ -85,7 +85,7 @@ Client::Client()
 // saves user name and announce it to the server
 void Client::registerUser(string username)
 {
-	username = username;
+	this->username = username;
 	const char *message = ("user " + username).c_str();
 	nAPI.sendToServer(message);
 }
@@ -94,15 +94,11 @@ void Client::registerUser(string username)
 bool Client::listenForServer()
 {
 	string message = nAPI.listenFromServer();
-	cout << " MESSAGE " << message << endl;
 	if (message.length() > 5 && message.substr(0, 5) == "start")
 	{
-		cout << "         GAME START! " << message << endl;
+		cout << "         GAME START! " << endl;
 		// check if this player is starting first
 		myTurn = (message.substr(6, 3) == "yes");
-		if (myTurn) {
-			cout << "YOUR TURN!" << endl;
-		}
 
 		// register player id
 		pid_str = message.substr(message.length() - 2);
@@ -207,13 +203,13 @@ void Client::endGame()
 
 void Client::drawBoard() {
 	if (pid == p0) {
-		cout << "\n\n\n\n\n\n Your tile: x\n You are player: " << pid << endl;
+		cout << "\n\n       " << username << "'s tile: x\n" << endl;
 	} else {
-		cout << "\n\n\n\n\n\n Your tile: o\n You are player: " << pid << endl;
+		cout << "\n\n       " << username << "'s tile: o\n" << endl;
 	}
 
 	for (int r = 0; r < row; r++) {
-		cout << "|";
+		cout << "     |";
 		for (int c = 0; c < col; c++) {
 			if (board[r][c] == b0) {
 				cout << " x |";
@@ -225,9 +221,10 @@ void Client::drawBoard() {
 		}
 		cout << "" << endl;
 	}
-	cout << "|___________________________|" << endl;
-	cout << "  1   2   3   4   5   6   7  " << endl;
+	cout << "     |___________________________|" << endl;
+	cout << "       1   2   3   4   5   6   7  " << endl;
 }
+
 int main()
 {
 
@@ -260,7 +257,10 @@ int main()
 	}
 
 	client.registerUser(myName);
-	cout << "\n         Wating for the other player... \n" << endl;
+	cout << "\n\n     ============== Online Game: Connect 4 ==============\n" << endl;
+	cout << "\n                         Hi " << myName << "!  \n" << endl;
+	cout << "\n           Please wait until another player joins... \n" << endl;
+	cout << "\n     ====================================================\n\n" << endl;
 
 	
 
@@ -277,7 +277,7 @@ int main()
 			if (client.isGameOver()) {
 				break;
 			}
-			cout << "\nEnter a column number: ";
+			cout << "\nYour turn! Enter a column number: ";
 			cin >> c;
 			cout << endl;
 
@@ -288,7 +288,7 @@ int main()
 				cin >> c;
 				cout << endl;
 			}
-		}
+		} 
 	}
 
 	client.endGame();
