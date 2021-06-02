@@ -35,8 +35,8 @@ public:
     bool setup4Client(char hostname[]); //helps the client connect to the server
     bool setup4Server();                // opens up port for listening, etc
     // void registerMove(int x, int y);    //listens to client move request then updates the board
-    bool sendToServer(const char message[], int);
-    bool sendToClient(const char message[], int);
+    bool sendToServer(const char message[], int playerID);
+    bool sendToClient(const char message[], int playerID);
     std::string listenFromServer();
     std::string listenFromClient();
 

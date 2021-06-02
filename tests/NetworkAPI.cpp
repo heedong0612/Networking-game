@@ -154,10 +154,19 @@ bool NetworkAPI::sendToServer(const char message[], int sd)
 }
 
 //server -> client
-bool NetworkAPI::sendToClient(const char message[], int sd)
+bool NetworkAPI::sendToClient(const char message[], int playerID)
 {
     std::cout << " in sendToClient" << std::endl;
     //makes sure listens first for client
+    int sd;
+    if (playerID == 0)
+    {
+        sd = player1sock;
+    }
+    else
+    {
+        sd = player2sock;
+    }
     int sendResult = send(sd, message, strlen(message), 0);
     // std::cout << "sendResult: " << sendResult << std::endl;
     // Couldn't send the request.
@@ -171,12 +180,13 @@ bool NetworkAPI::sendToClient(const char message[], int sd)
     return true;
 }
 
+//im the client
 std::string NetworkAPI::listenFromServer()
 {
     std::cout << " in listenFromServer" << std::endl;
     char buffer[MAX_BUF];
     memset(buffer, 0, MAX_BUF);
-    int read = recv(clientsd, buffer, MAX_BUF, 0); //READ from client
+    int read = recv(clientsd, buffer, MAX_BUF, 0); //READ from client, //you are p0?
     std::cout << " response is " << buffer << std::endl;
     return buffer;
 }
@@ -219,7 +229,7 @@ std::string NetworkAPI::listenFromClient()
         char buffer[MAX_BUF];
         memset(buffer, 0, MAX_BUF);
         int read = recv(newSd, buffer, MAX_BUF, 0); //READ from client
-        
+
         std::cout << " response is " << buffer << std::endl;
         std::string response(buffer);
         if (response.substr(0, 7) == "connect" && player1sock == NULL_SD)
@@ -232,8 +242,17 @@ std::string NetworkAPI::listenFromClient()
             std::cout << " setting player2sock" << std::endl;
             player2sock = newSd;
         }
+        //if both ready, send to server(okayer1sock, "you are p0"); send to server(player2sock, "you are p1");
+        if (player1sock != NULL_SD && player2sock != NULL_SD)
+        {
+            const char *msg = "you are p0";
+            sendToClient(msg, player1sock);
+            msg = "you are p1";
+            sendToClient(msg, player2sock);
+            break;
+        }
 
-        sendToClient(buffer, newSd);
+        //sendToClient(buffer, newSd);
     }
     close(newSd);
     return "";
