@@ -2,9 +2,7 @@
 Connect 4 is a two-player online board game where the players take turns dropping tiles on a seven-column, six-row grid.
 Users can play this game with the opponent on terminal by running the client program.
 
-![game0](res/startingPage.jpg)
-![game1](res/inGame1.jpg)
-![game2](res/lostGame.jpg)
+![game0](res/merged_screenshot.png)
 
 ## Instruction
 In the root folder, run this command to compile
