@@ -49,5 +49,6 @@ Server::Server() {
 int main(){
 	cout <<" in server main" << endl;
 	Server server = Server();
+	string msg = server.nAPI.listenFromClient();
 }
 
