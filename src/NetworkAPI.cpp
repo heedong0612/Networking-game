@@ -10,17 +10,17 @@ from client -> server (vice versa); and closing the TCP socket once done.
 
 #define PortNum 12345
 #define NULL_SD -1 // means no socket descriptor
-
+#define MAX_BUF 60000
 #include "NetworkAPI.h"
-void signal_callback_handler(int signum);
 
 //constructor
 NetworkAPI::NetworkAPI()
 {
-    signal(SIGINT, signal_callback_handler);
     port = PortNum;
     clientsd = NULL_SD; //initallty is -1 but will change
     serversd = NULL_SD; //initallty is -1 but will change
+    player1sock = NULL_SD;
+    player2sock = NULL_SD;
 }
 
 //destructor
@@ -54,9 +54,9 @@ bool NetworkAPI::setup4Client(char hostname[])
     sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)*host->h_addr_list)); // sets the address to the address we looked up
     sendSockAddr.sin_port = htons(port);                                                        // set the port to connect to
 
-    std::cout << "Connecting to port: " << port << std::endl;
     //open & connect stream-oriented socket with internet address family
     clientsd = socket(AF_INET, SOCK_STREAM, 0);
+
     if (clientsd < 0)
     {
 
@@ -65,7 +65,6 @@ bool NetworkAPI::setup4Client(char hostname[])
         close(clientsd);
         return false;
     }
-
     //connect to server
     int connectStatus = connect(clientsd, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
     if (connectStatus < 0)
@@ -75,6 +74,9 @@ bool NetworkAPI::setup4Client(char hostname[])
         close(clientsd);
         return false;
     }
+
+    const char * connectMsg = "connect";
+    sendToServer(connectMsg);
 
     return true;
 }
@@ -113,6 +115,7 @@ bool NetworkAPI::setup4Server()
         return false;
     }
 
+    listenFromClient();
     return true;
 }
 
@@ -125,9 +128,10 @@ bool NetworkAPI::setup4Server()
 // }
 
 //client -> server
-bool NetworkAPI::sendToServer(const char message[], int sd)
+bool NetworkAPI::sendToServer(const char message[])
 {
-    int sendResult = sendto(clientsd, message, strlen(message), 0, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
+    int sendResult = send(clientsd, message, strlen(message), 0);
+    // std::cout << " after send(clientsd)" << std::endl;
     // Couldn't send the request.
     if (sendResult <= 0)
     {
@@ -140,33 +144,48 @@ bool NetworkAPI::sendToServer(const char message[], int sd)
 }
 
 //server -> client
-bool NetworkAPI::sendToClient(const char message[], int sd)
+bool NetworkAPI::sendToClient(const char message[], int playerID)
 {
+
     //makes sure listens first for client
-    int sendResult = sendto(serversd, message, strlen(message), 0, (sockaddr *)&acceptSockAddr, sizeof(acceptSockAddr));
+    int sd;
+    if (playerID == 0)
+    {
+        sd = player1sock;
+    }
+    else
+    {
+        sd = player2sock;
+    }
+    int sendResult = send(sd, message, strlen(message), 0);
     // Couldn't send the request.
     if (sendResult <= 0)
     {
         std::cerr << gai_strerror(sendResult) << "\n"
                   << "Server unable to send the request to client" << std::endl;
-        return false;
+        exit(-1);
     }
 
     return true;
 }
 
+//im the client
 std::string NetworkAPI::listenFromServer()
 {
-    std::string response = "";
-    recv(clientsd, &response, 1, 0);
-    return response;
+    char buffer[MAX_BUF];
+    memset(buffer, 0, MAX_BUF);
+    int read = recv(clientsd, buffer, MAX_BUF, 0); //READ from client, //you are p0?
+
+    return buffer;
 }
 
+//return whatever client passed in, set up socketplayer1 & 2
 std::string NetworkAPI::listenFromClient()
 {
     // Listen on the socket
     int n = 5;                              //connection request size
     int listenResult = listen(serversd, n); // listen on the socket and allow up to n connections to wait.
+    // std::cout << " after listen(serversd)" << std::endl;
     if (listenResult != 0)
     {
         std::cerr << gai_strerror(listenResult) << "\n"
@@ -181,27 +200,72 @@ std::string NetworkAPI::listenFromClient()
     int newSd;
     while (1)
     {
-        // Accept the connection as a new socket
-        newSd = accept(serversd, (sockaddr *)&newsockAddr, &newsockSize); // grabs the new connection and assigns it a temporary socket
-
-        if (newSd == -1)
+        if (player1sock == NULL_SD || player2sock == NULL_SD)
         {
-            std::cerr << gai_strerror(newSd) << "\n"
-                      << "Error: Unable to connect to client." << std::endl;
-            close(newSd);
+            // Accept the connection as a new socket
+            newSd = accept(serversd, (sockaddr *)&newsockAddr, &newsockSize); // grabs the new connection and assigns it a temporary socket
+            // std::cout << " after accept(serversd)" << std::endl;
+
+            if (newSd == -1)
+            {
+                std::cerr << gai_strerror(newSd) << "\n"
+                          << "Error: Unable to connect to client." << std::endl;
+                close(newSd);
+                return "";
+            }
+        }
+        else
+        {
+            char buffer[MAX_BUF];
+            memset(buffer, 0, MAX_BUF);
+
+            while (1)
+            {
+                int read = recv(player1sock, buffer, MAX_BUF, 0); //READ from client
+                if (read > 0)
+                {
+                    return buffer;
+                }
+                read = recv(player2sock, buffer, MAX_BUF, 0); //READ from client
+                if (read > 0)
+                {
+                    return buffer;
+                }
+            }
+
             return "";
         }
 
-        //read from client
-        std::string response = "";
-        recv(newSd, &response, 1, 0);
-        return response;
-    }
-}
+        //read from client for all other casess
 
-void signal_callback_handler(int signum)
-{
-    std::cout << "Caught signal " << signum << std::endl;
-    // Terminate program
-    exit(signum);
+        char buffer[MAX_BUF];
+        memset(buffer, 0, MAX_BUF);
+        int read = recv(newSd, buffer, MAX_BUF, 0); //READ from client
+
+        std::string response(buffer);
+        if (response.substr(0, 7) == "connect" && player1sock == NULL_SD)
+        {
+            std::cout << "[Player 0 connected]" << std::endl;
+            player1sock = newSd;
+        }
+        else if (response.substr(0, 7) == "connect" && player2sock == NULL_SD)
+        {
+            std::cout << "[Player 1 connected]" << std::endl;
+            player2sock = newSd;
+        }
+        if (player1sock != NULL_SD && player2sock != NULL_SD)
+        {
+            //  const char *msg = "you are p0" ;
+            // sendToClient(msg, player1sock);
+            // msg = "you are p1" ;
+            // sendToClient(msg, player2sock);
+            return buffer;
+        }
+
+        //if both ready, send to server(okayer1sock, "you are p0"); send to server(player2sock, "you are p1");
+
+        //sendToClient(buffer, newSd);
+    }
+    close(newSd);
+    return "";
 }

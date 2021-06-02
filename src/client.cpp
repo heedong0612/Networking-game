@@ -35,6 +35,7 @@ public:
 	bool isMyTurn();					// returns whether it is this player's turn
 	bool listenForServer();				// accepts messages from the server
 	void endGame();						// displays ending messages
+	void drawBoard();					// draws a board
 
 private:
 	string username;
@@ -50,10 +51,17 @@ private:
 
 	NetworkAPI nAPI;
 };
-void signal_callback_handler(int signum);
+
+// void signal_callback_handler(int signum)
+// {
+// 	std::cout << "Caught signal " << signum << std::endl;
+// 	// Terminate program
+// 	exit(signum);
+// }
+
 Client::Client()
 {
-	signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
+	// signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
 	row = 6;
 	col = 7;
 
@@ -66,7 +74,7 @@ Client::Client()
 		}
 	}
 
-	char hostname[] = "placeholder"; //testing use 127.0.0.1 or CSSlabs
+	char hostname[] = "csslab2.uwb.edu"; //testing use 127.0.0.1 or CSSlabs
 
 	nAPI = NetworkAPI();
 	nAPI.setup4Client(hostname);
@@ -79,7 +87,7 @@ void Client::registerUser(string username)
 {
 	username = username;
 	const char *message = ("user " + username).c_str();
-	nAPI.sendToServer(message, pid);
+	nAPI.sendToServer(message);
 }
 
 // the message from server can either be "start", "gameover", or "button" message
@@ -151,7 +159,7 @@ bool Client::chooseMove(int c)
 	}
 
 	
-	nAPI.sendToServer(message, pid);
+	nAPI.sendToServer(message);
 	myTurn = false;
 
 	return true;
@@ -179,6 +187,25 @@ void Client::endGame()
 		message += "\n You lost.\n";
 }
 
+void Client::drawBoard() {
+	cout << "" << endl;
+
+	for (int r = 0; r < row; r++) {
+		cout << "|";
+		for (int c = 0; c < col; c++) {
+			if (board[r][c] == b0) {
+				cout << " x |";
+			} else if (board[r][c] == b1){
+				cout << " o |";
+			} else {
+				cout << "   |";
+			}
+		}
+		cout << "" << endl;
+	}
+	cout << "|___________________________|" << endl;
+	cout << "  1   2   3   4   5   6   7  " << endl;
+}
 int main()
 {
 
@@ -211,34 +238,30 @@ int main()
 	}
 
 	client.registerUser(myName);
+	cout << "GAME START" << endl;
 
-	while (!client.isGameOver())
-	{
-		client.listenForServer();
-		if (client.isMyTurn())
-		{
+	client.drawBoard();
+	// while (!client.isGameOver())
+	// {
+	// 	cout << "IN GAME " << endl;
+	// 	client.listenForServer();
+	// 	if (client.isMyTurn())
+	// 	{
 
-			// accept column number to drop the tile to
-			int c;
-			cout << "\nEnter column number: ";
-			cin >> c;
-			cout << endl;
-			while (!client.chooseMove(c))
-			{	// keep asking for r, c if they were invalid choices
-				// prompt for user input again
-				cout << "\nEnter column number: ";
-				cin >> c;
-				cout << endl;
-			}
-		}
-	}
+	// 		// accept column number to drop the tile to
+	// 		int c;
+	// 		cout << "\nEnter column number: ";
+	// 		cin >> c;
+	// 		cout << endl;
+	// 		while (!client.chooseMove(c))
+	// 		{	// keep asking for r, c if they were invalid choices
+	// 			// prompt for user input again
+	// 			cout << "\nEnter column number: ";
+	// 			cin >> c;
+	// 			cout << endl;
+	// 		}
+	// 	}
+	// }
 
-	client.endGame();
-}
-
-void signal_callback_handler(int signum)
-{
-	std::cout << "Caught signal " << signum << std::endl;
-	// Terminate program
-	exit(signum);
+	// client.endGame();
 }

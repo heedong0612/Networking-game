@@ -24,6 +24,7 @@ public:
 	void acceptMove();		// accept a move from a player and updates and broadcast the board
 	bool isGameOver();		// returns whether the game is over 
 	void endGame();			// broadcasts the end of the game and the winner
+	string player_names[2];
 
 private:
 	void updateBoard(int turn, int x, int y);
@@ -34,16 +35,23 @@ private:
 	int turn; // indicates who's turn it is
 	int winner;
 
-	string player_names[2];
+	
 	string ip_addresses[2];
 
 	NetworkAPI nAPI;
 
 };
 
+// void signal_callback_handler(int signum)
+// {
+//     std::cout << "Caught signal " << signum << std::endl;
+//     // Terminate program
+//     exit(signum);
+// }
+
 // initilizes the Server
 Server::Server() {
-	signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
+	// signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
 	row = 6;
 	col = 7;
 
@@ -58,7 +66,7 @@ Server::Server() {
 	nAPI.setup4Server();
 
 }
-void signal_callback_handler(int signum);
+
 // waits for and accept 2 players for the game
 void Server::acceptUser() {
 	
@@ -66,10 +74,12 @@ void Server::acceptUser() {
 
 	// accept 2 players
 	for (int i = 0; i < 2; i++) {
-		while (true) {
+
+		while (true) { // while loop for grabbing only "user ..." message
 			message = nAPI.listenFromClient();
 
 			if (message.length() >= 4 && message.substr(0,4) == "user") {
+			//	cout << "PLAYER: " << message.substr(5) << endl;
 				player_names[i] = message.substr(5);
 				break;
 			}
@@ -288,21 +298,16 @@ int main(){
 
 	// accept 2 users to start the game
 	server.acceptUser();
-	server.startGame();
+	cout <<"[All players reigstered]" << endl;
+	cout <<"Players: " << server.player_names[0] << ", " << server.player_names[1] << endl;
+	// server.startGame();
 
-	// continue the game until there is a winner
-	while (!server.isGameOver()) {
-		server.acceptMove();
-	}
+	// // continue the game until there is a winner
+	// while (!server.isGameOver()) {
+	// 	server.acceptMove();
+	// }
 	
-	// Game over. announce the winner and the end of the Game
-	server.endGame();
+	// // Game over. announce the winner and the end of the Game
+	// server.endGame();
 
-}
-
-void signal_callback_handler(int signum)
-{
-    std::cout << "Caught signal " << signum << std::endl;
-    // Terminate program
-    exit(signum);
 }

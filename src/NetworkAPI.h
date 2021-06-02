@@ -35,8 +35,8 @@ public:
     bool setup4Client(char hostname[]); //helps the client connect to the server
     bool setup4Server();                // opens up port for listening, etc
     // void registerMove(int x, int y);    //listens to client move request then updates the board
-    bool sendToServer(const char message[], int);
-    bool sendToClient(const char message[], int);
+    bool sendToServer(const char message[]);
+    bool sendToClient(const char message[], int playerID);
     std::string listenFromServer();
     std::string listenFromClient();
 
@@ -44,8 +44,10 @@ private:
     int port;                    // this TCP port
     int clientsd;                      // this TCP socket descriptor
     int serversd;    
-    struct sockaddr_in acceptSockAddr;   // server
-    struct sockaddr_in sendSockAddr; // client 
+    struct sockaddr_in acceptSockAddr;   // my socket address for internet
+    struct sockaddr_in sendSockAddr; // a destination socket address for internet
+    int player1sock;
+    int player2sock;
     // bool turn; //true if player 1, false if player 2;
     // string players[]; //2 slots for usernames
     // char matrix[]; //2D game board
