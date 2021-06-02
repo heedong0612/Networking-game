@@ -4,6 +4,10 @@ Users can play this game with the opponent on terminal by running the client pro
 
 ![game0](res/merged_screenshot.png)
 
+<p align="center">
+  <img width="372" height="520" src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/res/merged_screenshot.png">
+</p>
+
 ## Instruction
 In the root folder, run this command to compile
 ```g++ client.cpp NetworkAPI.cpp -o client```
