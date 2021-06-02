@@ -116,14 +116,15 @@ void Server::startGame() {
 // accepts a move from the player and send the updated information to both players
 void Server::acceptMove() {
 	
-	string message = nAPI.listenFromClient(-1);
+//	string message = nAPI.listenFromClient(turn);
 
 	string turn_str = "p0";
 	if (turn == p1) turn_str = "p1";
 
 	while (true) {
-		message = nAPI.listenFromClient(-1);
-
+		cout << "message from client " << endl;
+		string message = nAPI.listenFromClient(turn);
+		cout << message << endl;
 		// only accept a "move" message from the player with the current turn
 		if (message.length() == 11 && message.substr(0,4) == "move" && message.substr(5,2) == turn_str) {
 			int r = (int)message[8] - 48;
@@ -132,7 +133,12 @@ void Server::acceptMove() {
 			updateBoard(turn, r, c);
 
 			// send the recent valid move  to both players
-			const char *recent_move_message = ("button " + turn_str + " " + message[8] + " "  + message[10]).c_str();
+			string moveMessage = "button " + turn_str + " " + message[8] + " "  + message[10];
+			if (isGameOver()) {
+				if (winner == p0) moveMessage += " gameover p0";
+				else moveMessage += " gameover p1";
+			}
+			const char *recent_move_message = moveMessage.c_str();
 			nAPI.sendToClient(recent_move_message, p0);
 			nAPI.sendToClient(recent_move_message, p1);
 
@@ -297,14 +303,14 @@ int main(){
 	server.acceptUser();
 	cout <<"[All players reigstered]" << endl;
 	cout <<"Players: " << server.player_names[0] << ", " << server.player_names[1] << endl;
-//	server.startGame(); // 1 send to each client (about turns)
+	server.startGame(); // 1 send to each client (about turns)
 
-	// // continue the game until there is a winner
-	// while (!server.isGameOver()) {
-	// 	server.acceptMove();
-	// }
+	// continue the game until there is a winner
+	while (!server.isGameOver()) {
+		server.acceptMove();
+	}
 	
 	// // Game over. announce the winner and the end of the Game
-	// server.endGame();
+	server.endGame();
 
 }

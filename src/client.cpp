@@ -94,12 +94,15 @@ void Client::registerUser(string username)
 bool Client::listenForServer()
 {
 	string message = nAPI.listenFromServer();
-
+	cout << " MESSAGE " << message << endl;
 	if (message.length() > 5 && message.substr(0, 5) == "start")
 	{
-		cout << "MESSAGE FROM SERVER: " << message << endl;
+		cout << "         GAME START! " << message << endl;
 		// check if this player is starting first
-		myTurn = message.substr(6, 3) == "yes";
+		myTurn = (message.substr(6, 3) == "yes");
+		if (myTurn) {
+			cout << "YOUR TURN!" << endl;
+		}
 
 		// register player id
 		pid_str = message.substr(message.length() - 2);
@@ -108,14 +111,9 @@ bool Client::listenForServer()
 		else
 			pid = p1;
 	}
-	else if (message.length() > 8 && message.substr(0, 8) == "gameover")
-	{
-		// check if this player won the game
-		gameOver = true;
-		iWon = (message.substr(9, 2) == pid_str);
-	}
 	else if (message.length() > 6 && message.substr(0, 6) == "button")
-	{
+	{ // might be a button message or a game over message
+
 		// update my board with the new move ack'ed by the server
 		string player = message.substr(7, 2);
 		int r = (int)message[10] - 48;
@@ -131,6 +129,13 @@ bool Client::listenForServer()
 			board[r][c] = (1 - pid);
 			myTurn = true;
 		}
+
+		if (message.length() >= 25 && message.substr(14, 8) == "gameover") {
+			//cout << "          GAME OVER " << endl;
+			gameOver = true;
+			iWon = (message.substr(message.length()-2) == pid_str);
+			
+		}
 	}
 
 	return true;
@@ -139,6 +144,8 @@ bool Client::listenForServer()
 // check and return whether r, c are valid moves -- do not update board here. update it when the server ACK's it
 bool Client::chooseMove(int c)
 {
+	// 0 indexing
+	c--;
 
 	// check if r, c are valid
 	if (c < 0 || c >= col)
@@ -180,15 +187,20 @@ bool Client::isGameOver()
 // display gameover message and show the winner of the game
 void Client::endGame()
 {
-	string message = "GAME OVER";
+	string message = "\n\n\n         GAME OVER";
 	if (iWon)
-		message += "\n You won!\n";
+		message += "\n         You won!\n";
 	else
-		message += "\n You lost.\n";
+		message += "\n         You lost.\n";
+	cout << message << endl;
 }
 
 void Client::drawBoard() {
-	cout << "" << endl;
+	if (pid == p0) {
+		cout << "\n\n\n\n\n\n Your tile: x\n" << endl;
+	} else {
+		cout << "\n\n\n\n\n\n Your tile: o\n" << endl;
+	}
 
 	for (int r = 0; r < row; r++) {
 		cout << "|";
@@ -238,34 +250,35 @@ int main()
 	}
 
 	client.registerUser(myName);
-	cout << "\n         GAME START" << endl;
+	cout << "\n         Wating for the other player... \n" << endl;
 
-	client.drawBoard();
+	
 
 	while (!client.isGameOver())
 	{
-		// cout << "IN GAME " << endl;
 		client.listenForServer();
-
+		client.drawBoard();
+		
 		if (client.isMyTurn())
 		{
-
+			
 			// accept column number to drop the tile to
 			int c;
-			cout << "\nEnter column number: ";
+			if (client.isGameOver()) {
+				break;
+			}
+			cout << "\nEnter a column number: ";
 			cin >> c;
 			cout << endl;
 			while (!client.chooseMove(c))
 			{	// keep asking for r, c if they were invalid choices
 				// prompt for user input again
-				cout << "\nEnter column number: ";
+				cout << "\nInvalid column number! \nEnter a column number: ";
 				cin >> c;
 				cout << endl;
 			}
-		} else {
-
 		}
 	}
 
-	// client.endGame();
+	client.endGame();
 }
