@@ -197,9 +197,9 @@ void Client::endGame()
 
 void Client::drawBoard() {
 	if (pid == p0) {
-		cout << "\n\n\n\n\n\n Your tile: x\n" << endl;
+		cout << "\n\n\n\n\n\n Your tile: x\n You are player: " << pid << endl;
 	} else {
-		cout << "\n\n\n\n\n\n Your tile: o\n" << endl;
+		cout << "\n\n\n\n\n\n Your tile: o\n You are player: " << pid << endl;
 	}
 
 	for (int r = 0; r < row; r++) {

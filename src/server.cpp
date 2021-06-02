@@ -161,7 +161,6 @@ bool Server::isGameOver() {
 
 	int prev;
 	int count;
-	int winner;
 
 	// vertical 
 	for (int c = 0; c < col; c++) {
@@ -178,6 +177,8 @@ bool Server::isGameOver() {
 			// found a winner
 			if (count == 4) {
 				winner = board[r][c];
+				cout << board[r][c] << endl;
+				cout << "win 1" << endl;
 				return true;
 			}
 		}
@@ -198,6 +199,7 @@ bool Server::isGameOver() {
 			// found a winner
 			if (count == 4) {
 				winner = board[r][c];
+				cout << "win 2" << endl;
 				return true;
 			}
 		}
@@ -217,6 +219,7 @@ bool Server::isGameOver() {
 			// found a winner
 			if (count == 4) {
 				winner = board[r-c][c];
+				cout << "win 3" << endl;
 				return true;
 			}
 		}
@@ -235,6 +238,7 @@ bool Server::isGameOver() {
 			// found a winner
 			if (count == 4) {
 				winner = board[r][row-r+c-1];
+				cout << "win 4" << endl;
 				return true;
 			}
 		}
@@ -254,6 +258,7 @@ bool Server::isGameOver() {
 			// found a winner
 			if (count == 4) {
 				winner = board[r+c][c];
+				cout << "win 5" << endl;
 				return true;
 			}
 		}
@@ -273,6 +278,7 @@ bool Server::isGameOver() {
 			// found a winner
 			if (count == 4) {
 				winner = board[c-r][c];
+				cout << "win 6" << endl;
 				return true;
 			}
 		}
@@ -285,11 +291,14 @@ bool Server::isGameOver() {
 void Server::endGame() {
 	
 	string message = "gameover";
+	// cout << "winner message: " << message << endl;
+	cout << "WINNER: " << winner << endl;
 	if (winner == p0) {
 		message += " p0";
 	} else {
 		message += " p1";
 	}
+	cout << "winner message: " << message << endl;
 
 	nAPI.sendToClient(message.c_str(), p0); 
 	nAPI.sendToClient(message.c_str(), p1); 
