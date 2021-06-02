@@ -48,7 +48,7 @@ Client::Client()
 	signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
 
 	nAPI = NetworkAPI();
-	char hostname []= ("127.0.0.1");
+	char hostname []= "127.0.0.1";
 	nAPI.setup4Client(hostname);
 
 }
