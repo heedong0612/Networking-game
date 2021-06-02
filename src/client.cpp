@@ -30,7 +30,7 @@ class Client
 public:
 	Client();
 	void registerUser(string username); // saves username and sends the username to the server
-	bool chooseMove(int c);				// sends the moves to the server if they are valid
+	bool chooseMove(char c);				// sends the moves to the server if they are valid
 	bool isGameOver();					// returns whether the game is over
 	bool isMyTurn();					// returns whether it is this player's turn
 	bool listenForServer();				// accepts messages from the server
@@ -142,18 +142,28 @@ bool Client::listenForServer()
 }
 
 // check and return whether r, c are valid moves -- do not update board here. update it when the server ACK's it
-bool Client::chooseMove(int c)
+bool Client::chooseMove(char c_char)
 {
+	if (!isdigit(c_char)) {
+		cout << "Please enter a number." << endl;
+		return false;
+	}
+	int c = c_char - 48;
+
 	// 0 indexing
 	c--;
 
 	// check if r, c are valid
-	if (c < 0 || c >= col)
+	if (c < 0 || c >= col) {
+		cout << "Column number should be between 1 - 7." << endl;
 		return false;
+	}
 
 	// the column is already full
-	if (board[0][c] != Button::empty)
+	if (board[0][c] != Button::empty) {
+		cout << "This column is already full." << endl;
 		return false;
+	}
 
 	// find the right place for the button
 	const char *message;
@@ -263,17 +273,18 @@ int main()
 		{
 			
 			// accept column number to drop the tile to
-			int c;
+			char c;
 			if (client.isGameOver()) {
 				break;
 			}
 			cout << "\nEnter a column number: ";
 			cin >> c;
 			cout << endl;
+
 			while (!client.chooseMove(c))
 			{	// keep asking for r, c if they were invalid choices
 				// prompt for user input again
-				cout << "\nInvalid column number! \nEnter a column number: ";
+				cout << "Enter a column number: ";
 				cin >> c;
 				cout << endl;
 			}
