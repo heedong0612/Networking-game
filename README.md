@@ -7,11 +7,16 @@ Users can play this game with the opponent on terminal by running the client pro
 </p>
 
 ## Instruction
-In the root folder, run this command to compile
-```g++ client.cpp NetworkAPI.cpp -o client```
-
-Run this command to start the game.
-```./client```
+The server needs to be running to host the game. Compile and run server 
+```
+g++ server.cpp NetworkAPI.cpp -o server
+./server
+```
+The clients can now join the game by compiling and running
+```
+g++ client.cpp NetworkAPI.cpp -o client
+./client
+```
 
 ## architecture
 client-server architecture
