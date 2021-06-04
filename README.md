@@ -3,7 +3,15 @@ Connect 4 is a two-player online board game where the players take turns droppin
 Users can play this game with the opponent on terminal by running the client program.
 
 <p align="center">
-  <img src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/res/merged_screenshot.png">
+  <img src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/res/waitingRoom.png">
+</p>
+
+<p align="center">
+  <img src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/res/inGame1.png">
+</p>
+
+<p align="center">
+  <img src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/res/inGame2.png">
 </p>
 
 ## Instruction
