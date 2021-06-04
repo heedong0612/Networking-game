@@ -28,7 +28,7 @@ enum Button
 class Client
 {
 public:
-	Client();
+	Client(string hostname);
 	void registerUser(string username); // saves username and sends the username to the server
 	bool chooseMove(char c);				// sends the moves to the server if they are valid
 	bool isGameOver();					// returns whether the game is over
@@ -59,7 +59,7 @@ private:
 // 	exit(signum);
 // }
 
-Client::Client()
+Client::Client(string hostname)
 {
 	// signal(SIGINT, signal_callback_handler); //handle sudden CTRL-C 
 	row = 6;
@@ -73,11 +73,14 @@ Client::Client()
 			board[r][c] = Button::empty;
 		}
 	}
+	
 
-	char hostname[] = "csslab2.uwb.edu"; //testing use 127.0.0.1 or CSSlabs
+	int H = hostname.length();
+	char char_array[H + 1];  
+    strcpy(char_array, hostname.c_str()); 
 
 	nAPI = NetworkAPI();
-	nAPI.setup4Client(hostname);
+	nAPI.setup4Client(char_array);
 
 	gameOver = false;
 }
@@ -132,7 +135,6 @@ bool Client::listenForServer()
 		
 		}
 	} else if (message.length() == 11 && message.substr(0, 8) == "gameover") {
-		cout << "hERE!!!!!" <<endl;
 		gameOver = true;
 		iWon = (message.substr(message.length()-2) == pid_str);
 	}
@@ -237,10 +239,16 @@ void Client::drawBoard() {
 	cout << "       1   2   3   4   5   6   7  " << endl;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	if (argc == 1) {
+		cout << "Please give the server host name as the command line argument." << endl;
+		cout << "Ex: ./client csslab2.uwb.edu" << endl;
 
-	Client client = Client();
+		return -1;
+	}
+
+	Client client = Client(argv[1]);
 
 	// FIX: accept user input for user name
 
