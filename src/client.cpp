@@ -127,11 +127,14 @@ bool Client::listenForServer()
 		}
 
 		if (message.length() >= 25 && message.substr(14, 8) == "gameover") {
-			//cout << "          GAME OVER " << endl;
 			gameOver = true;
 			iWon = (message.substr(message.length()-2) == pid_str);
-			
+		
 		}
+	} else if (message.length() == 11 && message.substr(0, 8) == "gameover") {
+		cout << "hERE!!!!!" <<endl;
+		gameOver = true;
+		iWon = (message.substr(message.length()-2) == pid_str);
 	}
 
 	return true;
@@ -140,6 +143,14 @@ bool Client::listenForServer()
 // check and return whether r, c are valid moves -- do not update board here. update it when the server ACK's it
 bool Client::chooseMove(char c_char)
 {
+	if (c_char == 'q') {
+		const char *message;
+
+		message = ("quit " + pid_str).c_str();
+
+		nAPI.sendToServer(message);
+		return true;
+	}
 	if (!isdigit(c_char)) {
 		cout << "Please enter a number." << endl;
 		return false;
@@ -202,6 +213,7 @@ void Client::endGame()
 }
 
 void Client::drawBoard() {
+	cout << "       To quie the game, type (q) \n\n" << endl;
 	if (pid == p0) {
 		cout << "\n\n       " << username << "'s tile: x\n" << endl;
 	} else {

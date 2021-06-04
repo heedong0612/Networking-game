@@ -34,6 +34,7 @@ private:
 	int board[6][7];		
 	int turn; // indicates who's turn it is
 	int winner;
+	bool someoneQuit = false;
 
 	
 	string ip_addresses[2];
@@ -145,6 +146,16 @@ void Server::acceptMove() {
 			// change player turn
 			turn = 1 - turn;
 			break;
+		} else if(message.length() == 7 && message.substr(0,4) == "quit" && message.substr(5,2) == turn_str) {
+			string message;
+			if (turn_str == "p0") message = "gameover p1";// p1 won
+			else message = "gameover p0";// p0 won
+
+			const char* quit_message = message.c_str();
+			someoneQuit = true;
+			nAPI.sendToClient(quit_message, p0);
+			nAPI.sendToClient(quit_message, p1);
+			break;
 		}
 	}
 
@@ -158,6 +169,8 @@ void Server::updateBoard(int player, int r, int c) {
 
 // check if there are any vertical, horizontal, or diagonal line of 4 consecutive buttons
 bool Server::isGameOver() {
+
+	if (someoneQuit) return true;
 
 	int prev;
 	int count;
