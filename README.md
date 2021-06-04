@@ -4,7 +4,7 @@ Users can play this game with the opponent on terminal by running the client pro
 
 
 <p align="center">
-  <img src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/res/waitingRoom.png" width="300" height="200">>
+  <img src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/res/waitingRoom.png" width="400" height="600">>
 </p>
 
 <p align="center">
