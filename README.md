@@ -1,3 +1,9 @@
+<object data="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/doc/Implementation%20Report.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="https://github.com/heedong0612/OnlineGame-Connect4/blob/main/doc/Implementation%20Report.pdf">
+        
+    </embed>
+</object>
+
 # Online game: Connect 4
 Connect 4 is a two-player online board game where the players take turns dropping tiles on a seven-column, six-row grid.
 Users can play this game with the opponent on terminal by running the client program.
